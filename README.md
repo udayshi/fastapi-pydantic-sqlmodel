@@ -79,23 +79,43 @@ touch README.md
 touch Makefile
 ```
 
-### Step 1.6: Create .env File
+### Step 1.6: Provide the database password
+
+Keep the PostgreSQL password outside committed files. The following prompt reads it without displaying it or saving it
+in the shell history:
 
 ```bash
-# .env (for development - never commit this)
-DATABASE_URL=postgresql://user:password@localhost:5432/todo_db
-TEST_DATABASE_URL=sqlite:///:memory:
-LOG_LEVEL=INFO
+printf "PostgreSQL password: "
+read -r -s POSTGRES_PASSWORD
+printf "\n"
+export POSTGRES_PASSWORD
 ```
 
-### Step 1.7: Create .env.example File
+The password remains available only in the current shell. Set it again when opening a new terminal, or use a password
+manager or secret manager to populate the environment. Use a URL-safe password because it becomes part of the local
+PostgreSQL connection URL.
 
-```bash
+### Step 1.7: Create the environment files
+
+Create `.env.example` with the non-secret development settings below:
+
+```dotenv
 # .env.example (template for developers)
-DATABASE_URL=postgresql://user:password@localhost:5432/todo_db
+POSTGRES_USER=user
+POSTGRES_DB=todo_db
+DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}
 TEST_DATABASE_URL=sqlite:///:memory:
 LOG_LEVEL=INFO
 ```
+
+Copy the template for local development:
+
+```bash
+cp .env.example .env
+```
+
+`python-dotenv` expands `POSTGRES_PASSWORD` from the shell when the application loads `.env`. Do not add the password
+to either environment file.
 
 ### Step 1.8: Initialize Git
 
@@ -121,13 +141,17 @@ brew install postgresql
 brew services start postgresql
 
 # or use Docker
+: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the current shell first}"
+
 docker run --name postgres_todo \
   -e POSTGRES_USER=user \
-  -e POSTGRES_PASSWORD=password \
+  -e POSTGRES_PASSWORD \
   -e POSTGRES_DB=todo_db \
   -p 5432:5432 \
   -d postgres:latest
 ```
+
+Passing `POSTGRES_PASSWORD` without a value tells Docker to copy it from the current shell environment.
 
 ### Step 2.2: Create Database Configuration Module
 
@@ -135,27 +159,42 @@ Create `app/database/config.py`:
 
 ```python
 """Database configuration and session management."""
-from typing import Generator
-from sqlmodel import create_engine, Session, SQLModel
+
 import os
+from typing import Generator
+
 from dotenv import load_dotenv
+from sqlalchemy.engine import Engine
+from sqlmodel import Session, SQLModel, create_engine
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/todo_db")
-TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "sqlite:///:memory:")
 
-def get_engine():
+def get_database_url() -> str:
+    """Return the configured database URL."""
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError("DATABASE_URL environment variable is required")
+    return database_url
+
+
+DATABASE_URL = get_database_url()
+
+
+def get_engine() -> Engine:
     """Get database engine based on environment."""
     if "sqlite" in DATABASE_URL.lower():
         return create_engine(DATABASE_URL, echo=True, connect_args={"check_same_thread": False})
     return create_engine(DATABASE_URL, echo=True)
 
+
 engine = get_engine()
+
 
 def create_db_and_tables() -> None:
     """Create database tables."""
     SQLModel.metadata.create_all(engine)
+
 
 def get_session() -> Generator[Session, None, None]:
     """Dependency for getting database session."""
@@ -1428,7 +1467,7 @@ Guidelines:
 - __init__ methods: -> None
 - Repository methods: -> Model or -> list[Model] or -> Optional[Model]
 
-This follows CLAUDE.md strict type hint requirements and helps catch bugs early.
+This follows the project's strict type-hinting requirements and helps catch bugs early.
 
 ---
 
@@ -1451,7 +1490,7 @@ for development and production, SQLite for tests, and a Makefile for common deve
 | `from app.models.todo import SQLModel` | `from sqlmodel import SQLModel` | SQLModel is from sqlmodel package |
 | `from app.models.todo import Session` | `from sqlmodel import Session` | Session is from sqlmodel package |
 | Use `Todo` without importing | `from app.models.todo import Todo` | Must import what you use |
-| Missing return types | Add `-> None` or `-> Type` | Required by CLAUDE.md strict mode |
+| Missing return types | Add `-> None` or `-> Type` | Required by the project's strict mode |
 
 ### Configuration
 - Update `pyproject.toml` with `[tool.pytest.ini_options]` including `pythonpath = ["."]`
