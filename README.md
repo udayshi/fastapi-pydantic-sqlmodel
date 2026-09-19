@@ -236,12 +236,12 @@ def test_todo_completion_toggle() -> None:
     assert todo.completed is True
 ```
 
-**Key Learnings & Common Mistakes to Avoid:**
-- ✅ Import `SQLModel` from `sqlmodel` package, NOT from `app.models.todo`
-- ✅ Always import the classes you use (e.g., `Todo`)
-- ✅ Add return type hints to all functions: `-> None` for test functions, `-> Session` for fixtures
-- ✅ Remove duplicate imports inside fixtures
-- ❌ DON'T import `SQLModel` from your app module - it's from the `sqlmodel` package
+**A few things to keep in mind:**
+
+- Import `SQLModel` from the `sqlmodel` package, not from `app.models.todo`.
+- Import every class used by the module, such as `Todo`.
+- Add return type hints to all functions: `-> None` for test functions and `-> Session` for fixtures.
+- Remove duplicate imports inside fixtures.
 
 ### Step 3.2: Create Todo Model
 
@@ -323,7 +323,7 @@ tests/unit/test_todo_model.py::test_todo_creation PASSED         [33%]
 tests/unit/test_todo_model.py::test_todo_required_fields PASSED  [66%]
 tests/unit/test_todo_model.py::test_todo_completion_toggle PASSED [100%]
 
-3 passed in 0.26s ✅
+3 passed in 0.26s
 ```
 
 **Troubleshooting: If you get "ModuleNotFoundError: No module named 'app'"**
@@ -758,10 +758,10 @@ Key Changes:
 4. Add -> None return type to __init__ methods
 
 Python 3.14+ Type Hint Syntax:
-- List[T] → list[T]
-- Dict[K, V] → dict[K, V]
-- Optional[T] → T | None
-- Union[A, B] → A | B
+- List[T] -> list[T]
+- Dict[K, V] -> dict[K, V]
+- Optional[T] -> T | None
+- Union[A, B] -> A | B
 
 This ensures type correctness and follows modern Python standards.
 
@@ -1156,17 +1156,17 @@ disallow_incomplete_defs = true
 - `testpaths` restricts pytest to only look in tests directory
 - Configurations ensure code quality standards across the project
 
-### Common Mistakes to Avoid:
+### Common import mistakes
 
-❌ **Wrong:** `from app.models.todo import SQLModel`
+**Wrong:** `from app.models.todo import SQLModel`
 - SQLModel is from the `sqlmodel` package, not from your app
 
-✅ **Correct:** `from sqlmodel import SQLModel`
+**Correct:** `from sqlmodel import SQLModel`
 
-❌ **Wrong:** Forgetting to import classes used in tests
+**Wrong:** Forgetting to import classes used in tests
 - If you use `Todo(...)` in tests, you MUST import it
 
-✅ **Correct:**
+**Correct:**
 ```python
 from app.models.todo import Todo
 from sqlmodel import Session, create_engine, SQLModel
@@ -1191,10 +1191,10 @@ make test
 
 Expected output:
 ```
-tests/unit/test_todo_model.py ✓ 3 passed
-tests/unit/test_todo_schema.py ✓ 3 passed
-tests/unit/test_todo_repository.py ✓ 6 passed
-tests/integration/test_todo_routes.py ✓ 6 passed
+tests/unit/test_todo_model.py 3 passed
+tests/unit/test_todo_schema.py 3 passed
+tests/unit/test_todo_repository.py 6 passed
+tests/integration/test_todo_routes.py 6 passed
 ```
 
 ### Step 10.3: Start Development Server
@@ -1385,10 +1385,10 @@ Key changes:
 4. Add -> None return type to __init__ methods
 
 Python 3.14+ Type Hint Modern Syntax:
-- List[T] → list[T]
-- Dict[K, V] → dict[K, V]
-- Optional[T] → T | None
-- Union[A, B] → A | B
+- List[T] -> list[T]
+- Dict[K, V] -> dict[K, V]
+- Optional[T] -> T | None
+- Union[A, B] -> A | B
 
 ### Issue 5: Missing Return Type Hints
 Status: FIXED
@@ -1434,26 +1434,19 @@ This follows CLAUDE.md strict type hint requirements and helps catch bugs early.
 
 ## Summary
 
-This documentation provides a complete TDD-based todo app following the AGENT.md specifications:
-
-✅ **Environment**: Python 3.14 with `uv`
-✅ **Database**: PostgreSQL (dev/prod), SQLite (tests)
-✅ **Testing**: TDD pattern with unit and integration tests
-✅ **ORM**: SQLModel for database operations
-✅ **API**: FastAPI with proper error handling
-✅ **Logging**: Configured logging for debugging
-✅ **Automation**: Makefile for common tasks
+This guide walks through a TDD-based todo app built with Python 3.14, FastAPI, and SQLModel. It uses PostgreSQL
+for development and production, SQLite for tests, and a Makefile for common development tasks.
 
 ---
 
-## Key Learnings & Best Practices
+## Notes and conventions
 
 ### Package Structure
 - Create `__init__.py` in ALL package directories (app/, tests/, tests/unit/, tests/integration/)
 - Without them, pytest cannot import your modules
 
 ### Import Rules
-| ❌ Wrong | ✅ Correct | Why |
+| Wrong | Correct | Why |
 |---------|----------|-----|
 | `from app.models.todo import SQLModel` | `from sqlmodel import SQLModel` | SQLModel is from sqlmodel package |
 | `from app.models.todo import Session` | `from sqlmodel import Session` | Session is from sqlmodel package |
@@ -1568,17 +1561,17 @@ app = FastAPI(
 
 ```
 Application starts
-    ↓
+    |
 lifespan() executes startup code (before yield)
-    ↓
+    |
 yield - app ready to serve
-    ↓
+    |
 Application runs and handles requests
-    ↓
+    |
 Application stops
-    ↓
+    |
 lifespan() executes shutdown code (after yield)
-    ↓
+    |
 Application exits
 ```
 
@@ -2388,7 +2381,7 @@ Expected output:
 ### Key Learning Points
 
 1. **Pylint score**: Improved from 8.86/10 to 10.00/10
-2. **Import order matters**: Standard library → blank line → third-party → blank line → local imports
+2. **Import order matters**: Standard library, blank line, third-party packages, blank line, then local imports
 3. **Fixture shadowing**: pytest fixtures are safe to shadow (common pattern)
 4. **DRY principle**: Extract common test fixtures to conftest.py
 5. **File formatting**: Always end files with newline for POSIX compliance
