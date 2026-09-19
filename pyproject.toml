@@ -1,0 +1,55 @@
+[project]
+name = "tdd-fastapi-sqlmodel"
+version = "0.1.0"
+description = "A Test-Driven Development example using FastAPI, SQLModel, and PostgreSQL"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "black>=26.5.1",
+    "fastapi>=0.141.1",
+    "httpx>=0.28.1",
+    "isort>=9.0.1",
+    "lint>=1.2.1",
+    "psycopg2-binary>=2.9.13",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "python-dotenv>=1.2.3",
+    "sqlmodel>=0.0.42",
+    "starlette>=1.6.0",
+    "uvicorn[standard]>=0.53.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --strict-markers"
+filterwarnings = [
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+    "ignore:The anyio.abc.BlockingPortal alias is deprecated",
+]
+
+[tool.black]
+line-length = 120
+target-version = ["py314"]
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.mypy]
+python_version = "3.14"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.pylint.messages_control]
+disable = [
+    "R0913",  # Too many arguments
+]
+
+[tool.pylint.format]
+max-line-length = 120
