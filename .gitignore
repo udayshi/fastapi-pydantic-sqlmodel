@@ -16,3 +16,5 @@ __pycache__/
 logs/
 .idea
 .python-version
+.gitignore
+AGENT.md
